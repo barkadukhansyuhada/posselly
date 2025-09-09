@@ -1,0 +1,2 @@
+/Users/barka/Documents/project AI/Aplikasi POS/build/.cxx/Debug/10714t2t/x86_64/CMakeFiles/edit_cache.dir
+/Users/barka/Documents/project AI/Aplikasi POS/build/.cxx/Debug/10714t2t/x86_64/CMakeFiles/rebuild_cache.dir

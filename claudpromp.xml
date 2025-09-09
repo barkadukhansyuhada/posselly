@@ -1,0 +1,468 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<claude_code_project>
+  <project_meta>
+    <name>Selly Clone - Online Seller Keyboard App</name>
+    <type>Flutter Mobile Application</type>
+    <platform>Android</platform>
+    <version>MVP 1.0.0</version>
+    <flutter_version>3.x</flutter_version>
+    <dart_sdk>>=3.0.0</dart_sdk>
+    <min_android_sdk>21</min_android_sdk>
+    <target_android_sdk>34</target_android_sdk>
+  </project_meta>
+
+  <project_context>
+    <description>
+      A Flutter-based Android application that provides online sellers in Southeast Asia with an integrated 
+      keyboard overlay and order management system. The app enables sellers to manage transactions, create 
+      invoices, calculate shipping costs directly within messaging applications like WhatsApp and Instagram.
+    </description>
+    <target_audience>Small to medium online sellers in Indonesia managing 10-500 orders daily</target_audience>
+    <monetization>Google AdMob (Banner and Interstitial ads only)</monetization>
+    <language>Bahasa Indonesia</language>
+  </project_context>
+
+  <technical_requirements>
+    <backend>
+      <service>Supabase</service>
+      <features>
+        <feature>Authentication (Email/Password)</feature>
+        <feature>PostgreSQL Database</feature>
+        <feature>Storage for PDF invoices</feature>
+        <feature>Row Level Security (RLS)</feature>
+      </features>
+    </backend>
+    
+    <dependencies>
+      <core>
+        <package>flutter_bloc: ^8.1.3</package>
+        <package>supabase_flutter: ^2.0.0</package>
+        <package>google_mobile_ads: ^4.0.0</package>
+        <package>pdf: ^3.10.0</package>
+        <package>printing: ^5.11.0</package>
+        <package>path_provider: ^2.1.0</package>
+        <package>sqflite: ^2.3.0</package>
+        <package>shared_preferences: ^2.2.0</package>
+        <package>permission_handler: ^11.0.0</package>
+      </core>
+      
+      <ui>
+        <package>flutter_screenutil: ^5.9.0</package>
+        <package>cached_network_image: ^3.3.0</package>
+        <package>shimmer: ^3.0.0</package>
+        <package>flutter_slidable: ^3.0.0</package>
+        <package>modal_bottom_sheet: ^3.0.0</package>
+      </ui>
+      
+      <utilities>
+        <package>intl: ^0.18.0</package>
+        <package>uuid: ^4.0.0</package>
+        <package>connectivity_plus: ^5.0.0</package>
+        <package>firebase_core: ^2.24.0</package>
+        <package>firebase_analytics: ^10.7.0</package>
+        <package>firebase_crashlytics: ^3.4.0</package>
+      </utilities>
+    </dependencies>
+  </technical_requirements>
+
+  <database_schema>
+    <table name="users">
+      <column>id UUID PRIMARY KEY DEFAULT uuid_generate_v4()</column>
+      <column>email VARCHAR(255) UNIQUE NOT NULL</column>
+      <column>phone VARCHAR(20)</column>
+      <column>business_name VARCHAR(255)</column>
+      <column>created_at TIMESTAMP DEFAULT NOW()</column>
+      <column>last_active TIMESTAMP DEFAULT NOW()</column>
+    </table>
+    
+    <table name="templates">
+      <column>id UUID PRIMARY KEY DEFAULT uuid_generate_v4()</column>
+      <column>user_id UUID REFERENCES users(id) ON DELETE CASCADE</column>
+      <column>title VARCHAR(100)</column>
+      <column>content TEXT</column>
+      <column>category VARCHAR(50)</column>
+      <column>usage_count INTEGER DEFAULT 0</column>
+      <column>created_at TIMESTAMP DEFAULT NOW()</column>
+    </table>
+    
+    <table name="invoices">
+      <column>id UUID PRIMARY KEY DEFAULT uuid_generate_v4()</column>
+      <column>user_id UUID REFERENCES users(id) ON DELETE CASCADE</column>
+      <column>invoice_number VARCHAR(50) UNIQUE</column>
+      <column>customer_name VARCHAR(255)</column>
+      <column>customer_phone VARCHAR(20)</column>
+      <column>items JSONB</column>
+      <column>subtotal DECIMAL(12,2)</column>
+      <column>shipping_cost DECIMAL(10,2)</column>
+      <column>total DECIMAL(12,2)</column>
+      <column>pdf_url TEXT</column>
+      <column>created_at TIMESTAMP DEFAULT NOW()</column>
+    </table>
+    
+    <table name="products">
+      <column>id UUID PRIMARY KEY DEFAULT uuid_generate_v4()</column>
+      <column>user_id UUID REFERENCES users(id) ON DELETE CASCADE</column>
+      <column>name VARCHAR(255)</column>
+      <column>price DECIMAL(10,2)</column>
+      <column>stock INTEGER DEFAULT 0</column>
+      <column>created_at TIMESTAMP DEFAULT NOW()</column>
+    </table>
+  </database_schema>
+
+  <project_structure>
+    <folder path="lib/">
+      <folder path="lib/core/">
+        <folder path="lib/core/config/">
+          <file>app_config.dart</file>
+          <file>supabase_config.dart</file>
+          <file>admob_config.dart</file>
+        </folder>
+        <folder path="lib/core/constants/">
+          <file>app_colors.dart</file>
+          <file>app_strings.dart</file>
+          <file>app_dimensions.dart</file>
+        </folder>
+        <folder path="lib/core/utils/">
+          <file>currency_formatter.dart</file>
+          <file>date_formatter.dart</file>
+          <file>validators.dart</file>
+        </folder>
+        <folder path="lib/core/errors/">
+          <file>exceptions.dart</file>
+          <file>failures.dart</file>
+        </folder>
+      </folder>
+      
+      <folder path="lib/data/">
+        <folder path="lib/data/models/">
+          <file>user_model.dart</file>
+          <file>template_model.dart</file>
+          <file>invoice_model.dart</file>
+          <file>product_model.dart</file>
+        </folder>
+        <folder path="lib/data/datasources/">
+          <folder path="lib/data/datasources/remote/">
+            <file>supabase_datasource.dart</file>
+          </folder>
+          <folder path="lib/data/datasources/local/">
+            <file>sqlite_datasource.dart</file>
+            <file>preferences_datasource.dart</file>
+          </folder>
+        </folder>
+        <folder path="lib/data/repositories/">
+          <file>auth_repository_impl.dart</file>
+          <file>template_repository_impl.dart</file>
+          <file>invoice_repository_impl.dart</file>
+          <file>product_repository_impl.dart</file>
+        </folder>
+      </folder>
+      
+      <folder path="lib/domain/">
+        <folder path="lib/domain/entities/">
+          <file>user.dart</file>
+          <file>template.dart</file>
+          <file>invoice.dart</file>
+          <file>product.dart</file>
+        </folder>
+        <folder path="lib/domain/repositories/">
+          <file>auth_repository.dart</file>
+          <file>template_repository.dart</file>
+          <file>invoice_repository.dart</file>
+          <file>product_repository.dart</file>
+        </folder>
+        <folder path="lib/domain/usecases/">
+          <folder path="lib/domain/usecases/auth/">
+            <file>login_usecase.dart</file>
+            <file>register_usecase.dart</file>
+            <file>logout_usecase.dart</file>
+          </folder>
+          <folder path="lib/domain/usecases/invoice/">
+            <file>create_invoice_usecase.dart</file>
+            <file>generate_pdf_usecase.dart</file>
+            <file>calculate_shipping_usecase.dart</file>
+          </folder>
+        </folder>
+      </folder>
+      
+      <folder path="lib/presentation/">
+        <folder path="lib/presentation/bloc/">
+          <folder path="lib/presentation/bloc/auth/">
+            <file>auth_bloc.dart</file>
+            <file>auth_event.dart</file>
+            <file>auth_state.dart</file>
+          </folder>
+          <folder path="lib/presentation/bloc/invoice/">
+            <file>invoice_bloc.dart</file>
+            <file>invoice_event.dart</file>
+            <file>invoice_state.dart</file>
+          </folder>
+        </folder>
+        <folder path="lib/presentation/screens/">
+          <folder path="lib/presentation/screens/auth/">
+            <file>login_screen.dart</file>
+            <file>register_screen.dart</file>
+            <file>splash_screen.dart</file>
+          </folder>
+          <folder path="lib/presentation/screens/dashboard/">
+            <file>dashboard_screen.dart</file>
+            <file>stats_widget.dart</file>
+          </folder>
+          <folder path="lib/presentation/screens/invoice/">
+            <file>invoice_create_screen.dart</file>
+            <file>invoice_list_screen.dart</file>
+            <file>invoice_detail_screen.dart</file>
+          </folder>
+          <folder path="lib/presentation/screens/keyboard/">
+            <file>keyboard_service.dart</file>
+            <file>keyboard_view.dart</file>
+            <file>template_selector.dart</file>
+          </folder>
+        </folder>
+        <folder path="lib/presentation/widgets/">
+          <folder path="lib/presentation/widgets/ads/">
+            <file>banner_ad_widget.dart</file>
+            <file>interstitial_ad_manager.dart</file>
+          </folder>
+          <folder path="lib/presentation/widgets/common/">
+            <file>loading_widget.dart</file>
+            <file>error_widget.dart</file>
+            <file>custom_button.dart</file>
+            <file>custom_text_field.dart</file>
+          </folder>
+        </folder>
+      </folder>
+      
+      <folder path="lib/services/">
+        <folder path="lib/services/keyboard/">
+          <file>keyboard_service.dart</file>
+          <file>input_method_service.dart</file>
+        </folder>
+        <folder path="lib/services/pdf/">
+          <file>pdf_generator.dart</file>
+          <file>pdf_templates.dart</file>
+        </folder>
+        <folder path="lib/services/shipping/">
+          <file>shipping_calculator.dart</file>
+          <file>courier_rates.dart</file>
+        </folder>
+        <folder path="lib/services/ads/">
+          <file>admob_service.dart</file>
+          <file>ad_frequency_manager.dart</file>
+        </folder>
+      </folder>
+      
+      <file path="lib/main.dart">main application entry point</file>
+      <file path="lib/injection_container.dart">dependency injection setup</file>
+    </folder>
+    
+    <folder path="android/app/src/main/">
+      <file path="android/app/src/main/AndroidManifest.xml">
+        Configure keyboard service, permissions, AdMob app ID
+      </file>
+      <folder path="android/app/src/main/java/com/yourcompany/selly/">
+        <file>KeyboardService.java</file>
+        <file>MainActivity.java</file>
+      </folder>
+    </folder>
+  </project_structure>
+
+  <implementation_tasks>
+    <phase name="Week 1-2: Foundation">
+      <task priority="1">Initialize Flutter project with Clean Architecture structure</task>
+      <task priority="2">Setup Supabase project and configure authentication</task>
+      <task priority="3">Create database schema in Supabase</task>
+      <task priority="4">Implement basic authentication flow (register/login)</task>
+      <task priority="5">Setup local SQLite database for offline support</task>
+    </phase>
+    
+    <phase name="Week 3-4: Keyboard Module">
+      <task priority="1">Implement Android InputMethodService for custom keyboard</task>
+      <task priority="2">Create keyboard UI with Material Design</task>
+      <task priority="3">Build template management system</task>
+      <task priority="4">Add quick action buttons (invoice, shipping calculator)</task>
+      <task priority="5">Test keyboard in WhatsApp and Instagram</task>
+    </phase>
+    
+    <phase name="Week 5-6: Order Management">
+      <task priority="1">Build invoice creation form with validation</task>
+      <task priority="2">Implement product catalog with CRUD operations</task>
+      <task priority="3">Create shipping calculator with static rates</task>
+      <task priority="4">Generate PDF invoices with proper formatting</task>
+      <task priority="5">Add share functionality for PDFs</task>
+    </phase>
+    
+    <phase name="Week 7-8: AdMob Integration">
+      <task priority="1">Setup AdMob account and create ad units</task>
+      <task priority="2">Implement banner ads on main screens</task>
+      <task priority="3">Add interstitial ads with frequency capping</task>
+      <task priority="4">Create ad loading states and fallbacks</task>
+      <task priority="5">Test ad performance and placement</task>
+    </phase>
+    
+    <phase name="Week 9-10: MVP Polish">
+      <task priority="1">Implement dashboard with sales statistics</task>
+      <task priority="2">Add offline mode with sync capabilities</task>
+      <task priority="3">Setup Firebase Analytics and Crashlytics</task>
+      <task priority="4">Performance optimization and memory management</task>
+      <task priority="5">UI/UX polish and animations</task>
+      <task priority="6">Prepare for Google Play Store submission</task>
+    </phase>
+  </implementation_tasks>
+
+  <admob_configuration>
+    <test_mode>true</test_mode>
+    <app_id>ca-app-pub-3940256099942544~3347511713</app_id>
+    <ad_units>
+      <banner>
+        <test_id>ca-app-pub-3940256099942544/6300978111</test_id>
+        <production_id>REPLACE_WITH_PRODUCTION_ID</production_id>
+        <placement>
+          <screen>dashboard_screen</screen>
+          <screen>invoice_list_screen</screen>
+          <screen>reports_screen</screen>
+        </placement>
+      </banner>
+      <interstitial>
+        <test_id>ca-app-pub-3940256099942544/1033173712</test_id>
+        <production_id>REPLACE_WITH_PRODUCTION_ID</production_id>
+        <frequency_cap>180</frequency_cap>
+        <triggers>
+          <trigger>after_invoice_creation</trigger>
+          <trigger>after_pdf_generation</trigger>
+          <trigger>after_batch_operation</trigger>
+        </triggers>
+      </interstitial>
+    </ad_units>
+  </admob_configuration>
+
+  <ui_specifications>
+    <colors>
+      <primary>#2E7D32</primary>
+      <secondary>#FF6B35</secondary>
+      <background>#F5F5F5</background>
+      <surface>#FFFFFF</surface>
+      <text_primary>#212121</text_primary>
+      <text_secondary>#757575</text_secondary>
+      <error>#D32F2F</error>
+      <success>#388E3C</success>
+    </colors>
+    
+    <typography>
+      <font_family>Roboto</font_family>
+      <heading_size>24</heading_size>
+      <body_size>16</body_size>
+      <caption_size>12</caption_size>
+    </typography>
+    
+    <dimensions>
+      <button_height>48</button_height>
+      <border_radius>8</border_radius>
+      <padding_standard>16</padding_standard>
+      <elevation_standard>2</elevation_standard>
+    </dimensions>
+  </ui_specifications>
+
+  <shipping_rates>
+    <courier name="JNE">
+      <service name="REG" base_rate="9000" per_kg="2000" />
+      <service name="YES" base_rate="15000" per_kg="3000" />
+      <service name="OKE" base_rate="8000" per_kg="1500" />
+    </courier>
+    <courier name="J&amp;T">
+      <service name="EZ" base_rate="8000" per_kg="1800" />
+      <service name="REG" base_rate="9000" per_kg="2000" />
+    </courier>
+    <courier name="SiCepat">
+      <service name="REG" base_rate="8500" per_kg="1700" />
+      <service name="BEST" base_rate="12000" per_kg="2500" />
+    </courier>
+  </shipping_rates>
+
+  <testing_requirements>
+    <unit_tests>
+      <coverage>80%</coverage>
+      <focus_areas>
+        <area>Business logic (usecases)</area>
+        <area>Data transformations</area>
+        <area>Shipping calculations</area>
+      </focus_areas>
+    </unit_tests>
+    
+    <integration_tests>
+      <test>Supabase authentication flow</test>
+      <test>Invoice creation and PDF generation</test>
+      <test>Offline/online sync</test>
+      <test>Keyboard integration with messaging apps</test>
+    </integration_tests>
+    
+    <ui_tests>
+      <test>Critical user journeys</test>
+      <test>Ad loading and display</test>
+      <test>Form validations</test>
+    </ui_tests>
+  </testing_requirements>
+
+  <deployment>
+    <google_play>
+      <app_bundle>true</app_bundle>
+      <obfuscation>true</obfuscation>
+      <proguard>true</proguard>
+      <signing_config>release</signing_config>
+      <target_countries>
+        <country>Indonesia</country>
+      </target_countries>
+    </google_play>
+  </deployment>
+
+  <instructions_for_claude_code>
+    <instruction priority="1">
+      Start by creating the Flutter project with Clean Architecture structure. 
+      Use flutter_bloc for state management and follow SOLID principles.
+    </instruction>
+    
+    <instruction priority="2">
+      Implement Supabase integration first for authentication and database.
+      Ensure Row Level Security (RLS) is properly configured for all tables.
+    </instruction>
+    
+    <instruction priority="3">
+      The keyboard service is critical - it must work as an Android InputMethodService.
+      Test thoroughly with WhatsApp and Instagram to ensure compatibility.
+    </instruction>
+    
+    <instruction priority="4">
+      AdMob integration should use test ads during development. 
+      Implement frequency capping to avoid annoying users with too many ads.
+    </instruction>
+    
+    <instruction priority="5">
+      Focus on performance - the keyboard must load in under 1 second.
+      Use lazy loading and caching strategies where appropriate.
+    </instruction>
+    
+    <instruction priority="6">
+      All text should be in Bahasa Indonesia. Create a localization file
+      even though we're only supporting one language for now.
+    </instruction>
+    
+    <instruction priority="7">
+      Implement proper error handling and offline support from the beginning.
+      Users should be able to create invoices even without internet.
+    </instruction>
+    
+    <instruction priority="8">
+      Follow Material Design guidelines for Android. 
+      Use the color scheme and dimensions specified in the ui_specifications section.
+    </instruction>
+    
+    <instruction priority="9">
+      Generate comprehensive documentation for the codebase, especially for
+      the keyboard service implementation as it's the most complex part.
+    </instruction>
+    
+    <instruction priority="10">
+      Create a README.md with setup instructions, including Supabase configuration,
+      AdMob setup, and how to test the keyboard functionality.
+    </instruction>
+  </instructions_for_claude_code>
+</claude_code_project>

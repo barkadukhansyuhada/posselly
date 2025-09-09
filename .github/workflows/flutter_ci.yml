@@ -1,0 +1,95 @@
+name: Flutter CI
+
+on:
+  push:
+    branches: [ main, develop ]
+    paths: 
+      - 'app_flutter/**'
+  pull_request:
+    branches: [ main ]
+    paths: 
+      - 'app_flutter/**'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Flutter
+      uses: subosito/flutter-action@v2
+      with:
+        flutter-version: '3.22.3'
+        channel: 'stable'
+        
+    - name: Setup dependencies
+      working-directory: app_flutter
+      run: |
+        flutter pub get
+        dart run build_runner build --delete-conflicting-outputs
+        
+    - name: Run tests
+      working-directory: app_flutter
+      run: |
+        flutter analyze
+        flutter test --no-pub --coverage
+        
+    - name: Upload coverage reports
+      uses: codecov/codecov-action@v3
+      with:
+        file: app_flutter/coverage/lcov.info
+        
+    - name: Build APK
+      working-directory: app_flutter
+      env:
+        SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+        SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+      run: |
+        flutter build apk --release \
+          --dart-define=SUPABASE_URL=$SUPABASE_URL \
+          --dart-define=SUPABASE_ANON_KEY=$SUPABASE_ANON_KEY \
+          --dart-define=APP_ENV=production
+          
+    - name: Upload APK artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: release-apk
+        path: app_flutter/build/app/outputs/flutter-apk/app-release.apk
+
+  integration-test:
+    runs-on: ubuntu-latest
+    needs: test
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Flutter
+      uses: subosito/flutter-action@v2
+      with:
+        flutter-version: '3.22.3'
+        channel: 'stable'
+        
+    - name: Setup Android SDK
+      uses: android-actions/setup-android@v2
+      
+    - name: Start Supabase
+      run: |
+        npm install -g @supabase/cli
+        supabase start
+        
+    - name: Run integration tests
+      working-directory: app_flutter
+      env:
+        SUPABASE_URL: http://localhost:54321
+        SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_LOCAL_ANON_KEY }}
+      run: |
+        flutter pub get
+        dart run build_runner build --delete-conflicting-outputs
+        flutter drive \
+          --driver=test_driver/integration_test.dart \
+          --target=integration_test/app_test.dart \
+          --dart-define=SUPABASE_URL=$SUPABASE_URL \
+          --dart-define=SUPABASE_ANON_KEY=$SUPABASE_ANON_KEY

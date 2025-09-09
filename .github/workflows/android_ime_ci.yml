@@ -1,0 +1,64 @@
+name: Android IME CI
+
+on:
+  push:
+    branches: [ main, develop ]
+    paths: 
+      - 'ime_android/**'
+  pull_request:
+    branches: [ main ]
+    paths: 
+      - 'ime_android/**'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Java
+      uses: actions/setup-java@v3
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+        
+    - name: Setup Android SDK
+      uses: android-actions/setup-android@v2
+      
+    - name: Cache Gradle packages
+      uses: actions/cache@v3
+      with:
+        path: |
+          ~/.gradle/caches
+          ~/.gradle/wrapper
+        key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+        restore-keys: |
+          ${{ runner.os }}-gradle-
+          
+    - name: Grant execute permission for gradlew
+      working-directory: ime_android
+      run: chmod +x gradlew
+      
+    - name: Run tests
+      working-directory: ime_android
+      run: ./gradlew test
+      
+    - name: Build debug APK
+      working-directory: ime_android
+      run: ./gradlew assembleDebug
+      
+    - name: Build release APK
+      working-directory: ime_android
+      run: ./gradlew assembleRelease
+      env:
+        SIGNING_KEY_ALIAS: ${{ secrets.SIGNING_KEY_ALIAS }}
+        SIGNING_KEY_PASSWORD: ${{ secrets.SIGNING_KEY_PASSWORD }}
+        SIGNING_STORE_PASSWORD: ${{ secrets.SIGNING_STORE_PASSWORD }}
+        
+    - name: Upload APK artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: ime-release-apk
+        path: ime_android/app/build/outputs/apk/release/app-release.apk
