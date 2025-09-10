@@ -1,1 +1,0 @@
- /Users/barka/Documents/project\ AI/Aplikasi\ POS/.dart_tool/flutter_build/eee36a26e3e37db6f05ec6633acecda6/native_assets.json: 

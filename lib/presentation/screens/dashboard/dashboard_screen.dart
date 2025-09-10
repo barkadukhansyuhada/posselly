@@ -219,7 +219,11 @@ class _HomeTab extends StatelessWidget {
                 icon: Icons.add_circle,
                 title: 'Buat Invoice',
                 onTap: () {
-                  // Navigate to create invoice
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => const InvoiceListScreen(),
+                    ),
+                  );
                 },
               ),
             ),
@@ -229,7 +233,7 @@ class _HomeTab extends StatelessWidget {
                 icon: Icons.calculate,
                 title: 'Hitung Ongkir',
                 onTap: () {
-                  // Navigate to shipping calculator
+                  // TODO: Implement navigation to shipping calculator
                 },
               ),
             ),
@@ -243,7 +247,11 @@ class _HomeTab extends StatelessWidget {
                 icon: Icons.keyboard,
                 title: 'Buka Keyboard',
                 onTap: () {
-                  // Open keyboard service
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => const KeyboardView(),
+                    ),
+                  );
                 },
               ),
             ),
@@ -253,7 +261,11 @@ class _HomeTab extends StatelessWidget {
                 icon: Icons.add_business,
                 title: 'Tambah Produk',
                 onTap: () {
-                  // Navigate to add product
+                   Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => const ProductListScreen(),
+                    ),
+                  );
                 },
               ),
             ),

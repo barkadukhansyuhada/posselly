@@ -20,25 +20,27 @@ class KeyboardView extends StatelessWidget {
           IconButton(
             icon: const Icon(Icons.settings),
             onPressed: () {
-              // Open keyboard settings
+              // TODO: Open keyboard settings
             },
           ),
         ],
       ),
       body: SafeArea(
-        child: Padding(
-          padding: EdgeInsets.all(16.w),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildKeyboardStatus(),
-              SizedBox(height: 24.h),
-              _buildQuickTemplates(),
-              SizedBox(height: 24.h),
-              _buildQuickActions(),
-              SizedBox(height: 24.h),
-              _buildKeyboardPreview(),
-            ],
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: EdgeInsets.all(16.w),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildKeyboardStatus(),
+                SizedBox(height: 24.h),
+                _buildQuickTemplates(),
+                SizedBox(height: 24.h),
+                _buildQuickActions(),
+                SizedBox(height: 24.h),
+                _buildKeyboardPreview(),
+              ],
+            ),
           ),
         ),
       ),
@@ -132,7 +134,7 @@ class KeyboardView extends StatelessWidget {
             ),
             TextButton(
               onPressed: () {
-                // View all templates
+                // TODO: View all templates
               },
               child: const Text('Lihat Semua'),
             ),
@@ -140,15 +142,20 @@ class KeyboardView extends StatelessWidget {
         ),
         SizedBox(height: 12.h),
         SizedBox(
-          height: 120.h,
+          height: 140.h,
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
-            itemCount: 5,
+            itemCount: 5, // Placeholder count
             itemBuilder: (context, index) {
               return Container(
                 width: 200.w,
                 margin: EdgeInsets.only(right: 12.w),
                 child: Card(
+                  elevation: 1,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8.r),
+                    side: BorderSide(color: AppColors.divider.withValues(alpha: 0.5)),
+                  ),
                   child: Padding(
                     padding: EdgeInsets.all(12.w),
                     child: Column(
@@ -162,31 +169,41 @@ class KeyboardView extends StatelessWidget {
                             color: AppColors.textPrimary,
                           ),
                         ),
-                        SizedBox(height: 8.h),
+                        SizedBox(height: 4.h),
                         Expanded(
                           child: Text(
-                            'Selamat datang di toko kami! Kami menyediakan berbagai produk berkualitas dengan harga terjangkau...',
+                            'Selamat datang di toko kami! Kami menyediakan berbagai produk...',
                             style: TextStyle(
                               fontSize: 12.sp,
                               color: AppColors.textSecondary,
                             ),
-                            maxLines: 3,
                             overflow: TextOverflow.ellipsis,
+                            maxLines: 3,
                           ),
                         ),
-                        SizedBox(height: 8.h),
-                        ElevatedButton(
-                          onPressed: () {
-                            // Use template
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.primary,
-                            minimumSize: Size(double.infinity, 28.h),
-                          ),
-                          child: Text(
-                            'Gunakan',
-                            style: TextStyle(fontSize: 12.sp),
-                          ),
+                        SizedBox(height: 4.h),
+                        Builder(
+                          builder: (context) {
+                            return ElevatedButton(
+                              onPressed: () {
+                                 ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(content: Text('Template ${index + 1} digunakan!')),
+                                );
+                              },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: AppColors.primary,
+                                foregroundColor: AppColors.surface,
+                                minimumSize: Size(double.infinity, 36.h),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(6.r),
+                                ),
+                              ),
+                              child: Text(
+                                'Gunakan',
+                                style: TextStyle(fontSize: 12.sp, fontWeight: FontWeight.bold),
+                              ),
+                            );
+                          }
                         ),
                       ],
                     ),
@@ -220,47 +237,54 @@ class KeyboardView extends StatelessWidget {
           ),
         ),
         SizedBox(height: 12.h),
-        Row(
-          children: actions.map((action) {
-            return Expanded(
-              child: Container(
-                margin: EdgeInsets.only(right: 8.w),
-                child: InkWell(
-                  onTap: () {
-                    // Handle action
-                  },
-                  borderRadius: BorderRadius.circular(8.r),
+        Builder(
+          builder: (context) {
+            return Row(
+              children: actions.map((action) {
+                return Expanded(
                   child: Container(
-                    padding: EdgeInsets.all(12.w),
-                    decoration: BoxDecoration(
-                      color: AppColors.surface,
+                    margin: EdgeInsets.symmetric(horizontal: 4.w),
+                    child: InkWell(
+                      onTap: () {
+                        final actionTitle = action['title'] as String;
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text('$actionTitle ditekan! Fitur ini sedang dalam pengembangan.')),
+                        );
+                      },
                       borderRadius: BorderRadius.circular(8.r),
-                      border: Border.all(color: AppColors.divider),
-                    ),
-                    child: Column(
-                      children: [
-                        Icon(
-                          action['icon'] as IconData,
-                          color: action['color'] as Color,
-                          size: 24.w,
+                      child: Container(
+                        padding: EdgeInsets.symmetric(vertical: 12.w, horizontal: 8.w),
+                        decoration: BoxDecoration(
+                          color: AppColors.surface,
+                          borderRadius: BorderRadius.circular(8.r),
+                          border: Border.all(color: AppColors.divider),
                         ),
-                        SizedBox(height: 8.h),
-                        Text(
-                          action['title'] as String,
-                          style: TextStyle(
-                            fontSize: 10.sp,
-                            color: AppColors.textPrimary,
-                            fontWeight: FontWeight.w500,
-                          ),
-                          textAlign: TextAlign.center,
+                        child: Column(
+                          children: [
+                            Icon(
+                              action['icon'] as IconData,
+                              color: action['color'] as Color,
+                              size: 24.w,
+                            ),
+                            SizedBox(height: 8.h),
+                            Text(
+                              action['title'] as String,
+                              style: TextStyle(
+                                fontSize: 10.sp,
+                                color: AppColors.textPrimary,
+                                fontWeight: FontWeight.w500,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ],
                         ),
-                      ],
+                      ),
                     ),
                   ),
-                ),
-              ),
+                );
+              }).toList(),
             );
-          }).toList(),
+          }
         ),
       ],
     );
@@ -289,14 +313,13 @@ class KeyboardView extends StatelessWidget {
           ),
           child: Column(
             children: [
-              // Keyboard header with templates
               Container(
                 padding: EdgeInsets.all(12.w),
                 decoration: BoxDecoration(
                   color: AppColors.primary.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.only(
-                    topLeft: Radius.circular(12.r),
-                    topRight: Radius.circular(12.r),
+                  borderRadius: const BorderRadius.only(
+                    topLeft: Radius.circular(11),
+                    topRight: Radius.circular(11),
                   ),
                 ),
                 child: Row(
@@ -324,7 +347,6 @@ class KeyboardView extends StatelessWidget {
                   ],
                 ),
               ),
-              // Keyboard buttons preview
               Expanded(
                 child: Padding(
                   padding: EdgeInsets.all(12.w),
@@ -333,6 +355,7 @@ class KeyboardView extends StatelessWidget {
                     crossAxisSpacing: 8.w,
                     mainAxisSpacing: 8.h,
                     childAspectRatio: 2.5,
+                    physics: const NeverScrollableScrollPhysics(),
                     children: [
                       'Salam',
                       'Promosi',

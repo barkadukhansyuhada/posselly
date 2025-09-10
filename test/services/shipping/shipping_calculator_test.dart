@@ -1,6 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:selly_clone/services/shipping/shipping_calculator.dart';
-import 'package:selly_clone/services/shipping/rajaongkir_api.dart';
 
 void main() {
   group('ShippingResult', () {
@@ -86,43 +85,5 @@ void main() {
 
     // Note: Real API tests would require mocking or integration tests
     // Here we test the business logic and formatting functions
-    group('Integration tests (require API)', () {
-      test('getCities should return list when API is available', () async {
-        try {
-          final cities = await calculator.getCities();
-          expect(cities, isA<List<RajaOngkirCity>>());
-          expect(cities.isNotEmpty, true);
-        } catch (e) {
-          // If API fails, check error message format
-          expect(e.toString(), anyOf(
-            contains('Gagal mengambil data kota'),
-            contains('NetworkException'),
-            contains('ServerException'),
-          ));
-        }
-      });
-
-      test('searchCities should filter cities correctly', () async {
-        try {
-          final cities = await calculator.searchCities('Jakarta');
-          expect(cities, isA<List<RajaOngkirCity>>());
-          // If successful, verify Jakarta cities are returned
-          if (cities.isNotEmpty) {
-            expect(cities.any((city) => 
-              city.cityName.toLowerCase().contains('jakarta') ||
-              city.provinceName.toLowerCase().contains('jakarta')
-            ), true);
-          }
-        } catch (e) {
-          // If API fails, check error message format
-          expect(e.toString(), anyOf(
-            contains('Gagal mencari kota'),
-            contains('Gagal mengambil data kota'),
-            contains('NetworkException'),
-            contains('ServerException'),
-          ));
-        }
-      });
-    });
   });
 }

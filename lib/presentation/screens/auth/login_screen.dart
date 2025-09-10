@@ -77,10 +77,9 @@ class _LoginViewState extends State<_LoginView> {
               padding: EdgeInsets.all(24.w),
               child: Form(
                 key: _formKey,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                child: ListView(
                   children: [
-                    const Spacer(),
+                    SizedBox(height: 40.h),
                     _buildHeader(),
                     SizedBox(height: 48.h),
                     _buildLoginForm(),
@@ -88,7 +87,7 @@ class _LoginViewState extends State<_LoginView> {
                     _buildLoginButton(),
                     SizedBox(height: 16.h),
                     _buildRegisterLink(),
-                    const Spacer(flex: 2),
+                    SizedBox(height: 40.h),
                   ],
                 ),
               ),
@@ -162,6 +161,7 @@ class _LoginViewState extends State<_LoginView> {
 
   Widget _buildLoginButton() {
     return CustomButton(
+      key: const Key('loginButton'),
       text: AppStrings.login,
       onPressed: _onLoginPressed,
     );

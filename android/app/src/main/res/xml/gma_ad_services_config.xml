@@ -1,0 +1,6 @@
+
+<ad-services-config>
+    <gma-sdk-settings>
+        <omnia-sdk-enabled>true</omnia-sdk-enabled>
+    </gma-sdk-settings>
+</ad-services-config>

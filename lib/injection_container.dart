@@ -65,6 +65,15 @@ Future<void> initializeDependencies() async {
   sl.registerLazySingleton(() => AdMobService.instance);
 
   // Blocs
-  sl.registerFactory(() => AuthBloc(sl(), sl(), sl(), sl()));
-  sl.registerFactory(() => InvoiceBloc(sl(), sl(), sl()));
+  sl.registerFactory(() => AuthBloc(
+    sl<LoginUsecase>(),
+    sl<RegisterUsecase>(),
+    sl<LogoutUsecase>(),
+    sl<AuthRepository>(),
+  ));
+  sl.registerFactory(() => InvoiceBloc(
+    sl<CreateInvoiceUsecase>(),
+    sl<GeneratePdfUsecase>(),
+    sl<InvoiceRepository>(),
+  ));
 }
