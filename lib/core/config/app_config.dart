@@ -18,10 +18,16 @@ class AppConfig {
   static const String invoicePrefix = 'INV';
   static const String dateFormat = 'dd/MM/yyyy';
   
-  // Shipping API
-  static const String rajaOngkirApiKey = 'KT5rZl7Za7026ad9c55b6e460w8Pks8M'; // Shipping cost API
-  static const String rajaOngkirDeliveryApiKey = 'ZqAyVyOZa7026ad9c55b6e46pob5ybf1'; // Shipping delivery API
-  static const String rajaOngkirBaseUrl = 'https://api.rajaongkir.com/starter';
+  // Shipping API - RajaOngkir Migration Status (2025)
+  // NOTE: Old RajaOngkir API discontinued. New API requires enterprise account at collaborator.komerce.id
+  // Using mock data until enterprise API key is available
+  static const String rajaOngkirApiKey = 'DEMO_KEY_REQUIRES_ENTERPRISE_ACCOUNT'; // Requires enterprise account
+  static const String rajaOngkirDeliveryApiKey = 'ZqAyVyOZa7026ad9c55b6e46pob5ybf1'; // Legacy delivery API  
+  static const String rajaOngkirBaseUrl = 'https://api-sandbox.collaborator.komerce.id/tariff/api/v1';
+  static const String rajaOngkirProdBaseUrl = 'https://api.collaborator.komerce.id/tariff/api/v1';
   static const double defaultWeight = 1000; // gram
-  static const List<String> supportedCouriers = ['jne', 'pos', 'tiki'];
+  static const List<String> supportedCouriers = ['jne', 'pos', 'tiki', 'jnt', 'sicepat', 'idx', 'ninja'];
+  
+  // Development Configuration
+  static const bool useMockShippingData = true; // Set false when enterprise API key available
 }

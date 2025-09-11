@@ -45,35 +45,53 @@ void main() {
       final bottomNavBarFinder = find.byType(BottomNavigationBar);
       expect(bottomNavBarFinder, findsOneWidget, reason: 'BottomNavigationBar not found. Login may have failed.');
       
-      // Tap the "Buat Invoice" button and verify navigation
-      final createInvoiceButton = find.text('Buat Invoice');
-      await tester.ensureVisible(createInvoiceButton);
-      await tester.pumpAndSettle();
-      await tester.tap(createInvoiceButton);
-      await tester.pumpAndSettle();
-      expect(find.text('Invoice'), findsOneWidget);
-      await tester.pageBack();
-      await tester.pumpAndSettle();
-
-      // Tap the "Tambah Produk" button and verify navigation
-      final addProductButton = find.text('Tambah Produk');
-      await tester.ensureVisible(addProductButton);
-      await tester.pumpAndSettle();
-      await tester.tap(addProductButton);
-      await tester.pumpAndSettle();
-      expect(find.text('Produk'), findsWidgets);
-      await tester.pageBack();
-      await tester.pumpAndSettle();
-
-      // Tap the "Buka Keyboard" button and verify navigation
-      final openKeyboardButton = find.text('Buka Keyboard');
-      await tester.ensureVisible(openKeyboardButton);
-      await tester.pumpAndSettle();
-      await tester.tap(openKeyboardButton);
-      await tester.pumpAndSettle();
-      expect(find.text('Keyboard'), findsOneWidget);
-      await tester.pageBack();
-      await tester.pumpAndSettle();
+      // Verify the Quick Actions section is visible
+      final quickActionsTitle = find.text('Aksi Cepat');
+      expect(quickActionsTitle, findsOneWidget, reason: 'Quick Actions section not found');
+      
+      // Test each quick action button with better error handling
+      await _testQuickAction(tester, 'Buat Invoice', 'Invoice');
+      await _testQuickAction(tester, 'Tambah Produk', 'Produk');  
+      await _testQuickAction(tester, 'Buka Keyboard', 'Keyboard');
+      await _testQuickAction(tester, 'Hitung Ongkir', 'Hitung Ongkir');
     });
   });
+}
+
+/// Helper method to test quick action buttons with better error handling
+Future<void> _testQuickAction(WidgetTester tester, String buttonText, String expectedScreenText) async {
+  try {
+    // Find the button
+    final buttonFinder = find.text(buttonText);
+    expect(buttonFinder, findsOneWidget, reason: 'Button "$buttonText" not found');
+    
+    // Scroll to make the button visible if needed
+    await tester.ensureVisible(buttonFinder);
+    await tester.pumpAndSettle();
+    
+    // Additional check to verify button is actually tappable
+    final buttonWidget = tester.widget(buttonFinder);
+    expect(buttonWidget, isNotNull, reason: 'Button widget "$buttonText" is null');
+    
+    // Tap the button
+    await tester.tap(buttonFinder);
+    await tester.pumpAndSettle();
+    
+    // Verify navigation occurred by checking for expected screen content
+    if (expectedScreenText == 'Produk') {
+      expect(find.text(expectedScreenText), findsWidgets, reason: 'Expected screen "$expectedScreenText" not found after tapping "$buttonText"');
+    } else {
+      expect(find.text(expectedScreenText), findsOneWidget, reason: 'Expected screen "$expectedScreenText" not found after tapping "$buttonText"');
+    }
+    
+    // Navigate back to dashboard
+    await tester.pageBack();
+    await tester.pumpAndSettle();
+    
+    // Verify we're back on the dashboard
+    expect(find.text('Aksi Cepat'), findsOneWidget, reason: 'Failed to return to dashboard after testing "$buttonText"');
+    
+  } catch (e) {
+    throw Exception('Failed testing quick action "$buttonText": $e');
+  }
 }

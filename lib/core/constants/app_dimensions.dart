@@ -38,4 +38,10 @@ class AppDimensions {
   static const double maxContentWidth = 400.0;
   static const double cardHeight = 120.0;
   static const double listItemHeight = 72.0;
+  
+  // Grid Layout
+  static const int gridCrossAxisCount = 2;
+  static const double gridCrossAxisSpacing = 16.0;
+  static const double gridMainAxisSpacing = 16.0;
+  static const double gridChildAspectRatio = 1.1;
 }

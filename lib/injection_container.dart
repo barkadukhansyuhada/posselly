@@ -18,6 +18,7 @@ import 'domain/usecases/invoice/generate_pdf_usecase.dart';
 import 'domain/usecases/invoice/calculate_shipping_usecase.dart';
 import 'presentation/bloc/auth/auth_bloc.dart';
 import 'presentation/bloc/invoice/invoice_bloc.dart';
+import 'presentation/bloc/shipping/shipping_bloc.dart';
 import 'services/pdf/pdf_generator.dart';
 import 'services/shipping/shipping_calculator.dart';
 import 'services/ads/admob_service.dart';
@@ -75,5 +76,9 @@ Future<void> initializeDependencies() async {
     sl<CreateInvoiceUsecase>(),
     sl<GeneratePdfUsecase>(),
     sl<InvoiceRepository>(),
+  ));
+  sl.registerFactory(() => ShippingBloc(
+    sl<CalculateShippingUsecase>(),
+    sl<ShippingCalculator>(),
   ));
 }

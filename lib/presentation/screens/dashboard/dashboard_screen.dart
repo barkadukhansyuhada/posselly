@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../../core/constants/app_colors.dart';
+import '../../../core/constants/app_dimensions.dart';
 import '../../../injection_container.dart';
 import '../../bloc/auth/auth_bloc.dart';
 import '../../bloc/auth/auth_event.dart';
@@ -14,6 +15,7 @@ import '../invoice/invoice_list_screen.dart';
 import '../templates/template_list_screen.dart';
 import '../products/product_list_screen.dart';
 import '../keyboard/keyboard_view.dart';
+import '../shipping/shipping_calculator_screen.dart';
 import 'stats_widget.dart';
 
 class DashboardScreen extends StatelessWidget {
@@ -200,6 +202,53 @@ class _HomeTab extends StatelessWidget {
   }
 
   Widget _buildQuickActions(BuildContext context) {
+    final quickActions = [
+      {
+        'icon': Icons.add_circle,
+        'title': 'Buat Invoice',
+        'onTap': () {
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (context) => const InvoiceListScreen(),
+            ),
+          );
+        },
+      },
+      {
+        'icon': Icons.calculate,
+        'title': 'Hitung Ongkir',
+        'onTap': () {
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (context) => const ShippingCalculatorScreen(),
+            ),
+          );
+        },
+      },
+      {
+        'icon': Icons.keyboard,
+        'title': 'Buka Keyboard',
+        'onTap': () {
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (context) => const KeyboardView(),
+            ),
+          );
+        },
+      },
+      {
+        'icon': Icons.add_business,
+        'title': 'Tambah Produk',
+        'onTap': () {
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (context) => const ProductListScreen(),
+            ),
+          );
+        },
+      },
+    ];
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -212,64 +261,24 @@ class _HomeTab extends StatelessWidget {
           ),
         ),
         SizedBox(height: 16.h),
-        Row(
-          children: [
-            Expanded(
-              child: _buildActionCard(
-                icon: Icons.add_circle,
-                title: 'Buat Invoice',
-                onTap: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (context) => const InvoiceListScreen(),
-                    ),
-                  );
-                },
-              ),
-            ),
-            SizedBox(width: 16.w),
-            Expanded(
-              child: _buildActionCard(
-                icon: Icons.calculate,
-                title: 'Hitung Ongkir',
-                onTap: () {
-                  // TODO: Implement navigation to shipping calculator
-                },
-              ),
-            ),
-          ],
-        ),
-        SizedBox(height: 16.h),
-        Row(
-          children: [
-            Expanded(
-              child: _buildActionCard(
-                icon: Icons.keyboard,
-                title: 'Buka Keyboard',
-                onTap: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (context) => const KeyboardView(),
-                    ),
-                  );
-                },
-              ),
-            ),
-            SizedBox(width: 16.w),
-            Expanded(
-              child: _buildActionCard(
-                icon: Icons.add_business,
-                title: 'Tambah Produk',
-                onTap: () {
-                   Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (context) => const ProductListScreen(),
-                    ),
-                  );
-                },
-              ),
-            ),
-          ],
+        GridView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: AppDimensions.gridCrossAxisCount,
+            crossAxisSpacing: AppDimensions.gridCrossAxisSpacing.w,
+            mainAxisSpacing: AppDimensions.gridMainAxisSpacing.h,
+            childAspectRatio: AppDimensions.gridChildAspectRatio,
+          ),
+          itemCount: quickActions.length,
+          itemBuilder: (context, index) {
+            final action = quickActions[index];
+            return _buildActionCard(
+              icon: action['icon'] as IconData,
+              title: action['title'] as String,
+              onTap: action['onTap'] as VoidCallback,
+            );
+          },
         ),
       ],
     );
